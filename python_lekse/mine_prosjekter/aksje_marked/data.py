@@ -1,4 +1,5 @@
-
+import os
+import json
 
 db = {
 "aksje_beholdning" : 0,
@@ -7,3 +8,7 @@ db = {
 "start_kurs" : 100.0,
 "penger" : 1000
 }
+
+if os.path.exists("data.json"):
+    with open("data.json", "r") as fil:
+        db = json.load(fil)
