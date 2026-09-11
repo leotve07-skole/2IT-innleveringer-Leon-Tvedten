@@ -1,8 +1,9 @@
-import json
-from fake_aksjemarked import (
-aksje_beholdning,
-aksje_beholdning_verdi,
-kurs,
-start_kurs,
-penger
-)
+
+
+db = {
+"aksje_beholdning" : 0,
+"aksje_beholdning_verdi" : 0,
+"kurs" : [],
+"start_kurs" : 100.0,
+"penger" : 1000
+}
