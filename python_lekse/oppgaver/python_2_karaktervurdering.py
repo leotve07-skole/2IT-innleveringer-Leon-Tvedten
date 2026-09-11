@@ -12,4 +12,4 @@ try:
     else:
         print("Ugyldig poeng")
 except ValueError:
-    print("Ugyldig poeng")
+    print("Ugyldig input")
