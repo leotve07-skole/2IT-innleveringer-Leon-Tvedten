@@ -18,15 +18,17 @@ for x in range(100):
             print(f"Hvor mange aksjer vil du kjøpe?\n{kurs_print}\
                   \ndu har [light_green]{db["penger"]}[/light_green] kr på kontoen")
             kjøp_aksjer = int(input())
-            db["aksje_beholdning"] += kjøp_aksjer
-            db["penger"] -= (kjøp_aksjer * db["kurs"][-1])
-            db["aksje_beholdning"] = (db["aksje_beholdning"] * db["kurs"][-1])
-            print(f"Du har kjøpt [light_green]{kjøp_aksjer}[/light_green] aksjer for [red]{(kjøp_aksjer * db["kurs"][-1]):.2f}[/red] kr. \
-               \nDin aksje beholdning er nå verdt [light_green]{db["aksje_beholdning"]:.2f}[/light_green] \
-               \nDu har [red]{db["penger"]:.2f}[/red] kr igjen på kontoen")
-        with open("data.json", "w") as fil:
-            json.dump(db, fil)
-        
+            if (db["penger"] - (kjøp_aksjer * db["kurs"][-1])) >= 0:
+                db["aksje_beholdning"] += kjøp_aksjer
+                db["penger"] -= (kjøp_aksjer * db["kurs"][-1])
+                db["aksje_beholdning"] = (db["aksje_beholdning"] * db["kurs"][-1])
+                print(f"Du har kjøpt [light_green]{kjøp_aksjer}[/light_green] aksjer for [red]{(kjøp_aksjer * db["kurs"][-1]):.2f}[/red] kr. \
+                \nDin aksje beholdning er nå verdt [light_green]{db["aksje_beholdning"]:.2f}[/light_green] \
+                \nDu har [red]{db["penger"]:.2f}[/red] kr igjen på kontoen")
+                with open("data.json", "w") as fil:
+                    json.dump(db, fil)
+            else:
+                print(f"Du har ikke penger på konto til å kjøpe [red]{kjøp_aksjer}[/red] aksjer")
         
 
     
