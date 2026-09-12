@@ -24,6 +24,7 @@ def aksje_spill(stdscr):
             stdscr.addstr(y, x + 6, f"↑ {db["kurs"][-1]:.2f} kr", c_green)
         else:
             stdscr.addstr(y, x + 6, f"↓ {db["kurs"][-1]:.2f} kr", c_red)
+        stdscr.refresh()
     def hent_tall(stdscr, y, x):
         stdscr.nodelay(False)
         tall = int(stdscr.getstr(y, x).decode())
@@ -63,6 +64,7 @@ def aksje_spill(stdscr):
                     "Hvis du vil selge aksjer skriv <s>\n"
                     "Skriv <g> hvis du vil se grafisk aksje kursen"
                     )
+                vis_kurs(8, 0)
             if kommando == ord("b"):
                 stdscr.clear()
                 stdscr.refresh()
@@ -104,6 +106,7 @@ def aksje_spill(stdscr):
                 stdscr.addstr(6, 2, "Aksjeverdien tilsvarer ")
                 stdscr.addstr(f"{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}", c_green)
                 stdscr.addstr(8, 2, "Hvor mange aksjer vil du selge?")
+                vis_kurs(10, 2)
                 selg_aksjer = hent_tall(stdscr, 4, 35)
                 stdscr.clear()
                 if (db["aksje_beholdning"] - selg_aksjer) >= 0:
