@@ -14,6 +14,7 @@ def aksje_spill(stdscr):
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
     c_green = curses.color_pair(1)
     c_red = curses.color_pair(2)
+    sist_oppdatert = time.time()
 
     def vis_kurs(y, x):
         kurs = db["kurs"][-1]
@@ -30,10 +31,15 @@ def aksje_spill(stdscr):
         return tall
     modus = "kurs"
     for x in range(1000):
-        time.sleep(1)
-        endring = random.uniform(-5, 5)
-        db["start_kurs"] += endring
-        db["kurs"].append(db["start_kurs"])
+        time.sleep(0.1)
+        if time.time() - sist_oppdatert >= 1:
+            endring = random.uniform(-5, 5)
+            db["start_kurs"] += endring
+            db["kurs"].append(db["start_kurs"])
+
+            sist_oppdatert = time.time()
+        stdscr.refresh()
+        time.sleep(0.05)
         if modus == "kurs":     
             if len(db["kurs"]) >= 2:
                 stdscr.addstr(4, 0,
@@ -44,6 +50,7 @@ def aksje_spill(stdscr):
             kommando = stdscr.getch()
             if kommando == ord("b"):
                 stdscr.clear()
+                stdscr.refresh()
                 stdscr.addstr(4, 2, f"Hvor mange aksjer vil du kjøpe?")
                 vis_kurs(2,2)
                 stdscr.addstr(6, 2, "du har ")
@@ -77,6 +84,7 @@ def aksje_spill(stdscr):
                     stdscr.addstr("aksjer")
             elif kommando == ord("s"):
                 stdscr.clear()
+                stdscr.refresh()
                 stdscr.addstr(4, 2, f"Du har {db["aksje_beholdning"]} aksjer")
                 stdscr.addstr(6, 2, "Aksjeverdien tilsvarer ")
                 stdscr.addstr(f"{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}", c_green)
@@ -102,6 +110,7 @@ def aksje_spill(stdscr):
                     stdscr.addstr(4, 2, f"Du har ikke nok antall aksjer til å selge {selg_aksjer} aksjer")
             elif kommando == ord("g"):
                 stdscr.clear()
+                stdscr.refresh()
                 modus = "graf"
         if modus == "graf":
             stdscr.addch(graf_y, graf_x, "*", c_green) if db["kurs"][-1] > db["kurs"][-2] \
