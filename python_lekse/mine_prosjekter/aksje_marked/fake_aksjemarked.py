@@ -1,87 +1,121 @@
 import random
 import time
 import json
-import threading
-import queue
 import curses
-from rich import print as rprint
 from data import db
 
 def aksje_spill(stdscr):
     stdscr.nodelay(True)
+    curses.start_color()
     max_y, max_x = stdscr.getmaxyx()
     graf_x = 0
     graf_y = max_y // 2
-    kommandoer = queue.Queue()
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+    c_green = curses.color_pair(1)
+    c_red = curses.color_pair(2)
 
-    def input_loop():
-        while True:
-            kommando = stdscr.getch()
-            kommandoer.put(kommando)
-        
-    threading.Thread(target=input_loop, daemon=True).start()
-
+    def vis_kurs(y, x):
+        kurs = db["kurs"][-1]
+        forrige_kurs = db["kurs"][-2]
+        stdscr.addstr(y,x, "Kurs: ")
+        if kurs > forrige_kurs:
+            stdscr.addstr(y, x + 6, f"↑ {db["kurs"][-1]:.2f} kr", c_green)
+        else:
+            stdscr.addstr(y, x + 6, f"↓ {db["kurs"][-1]:.2f} kr", c_red)
+    def hent_tall(stdscr, y, x):
+        stdscr.nodelay(False)
+        tall = int(stdscr.getstr(y, x).decode())
+        stdscr.nodelay(True)
+        return tall
     modus = "kurs"
     for x in range(1000):
+        time.sleep(1)
         endring = random.uniform(-5, 5)
         db["start_kurs"] += endring
         db["kurs"].append(db["start_kurs"])
         if modus == "kurs":     
             if len(db["kurs"]) >= 2:
-                kurs_print = f"Kurs: [light_green]↑ {db["kurs"][-1]:.2f}[/light_green] kr" if db["kurs"][-1] > db["kurs"][-2] else f"Kurs: [red]↓ {db["kurs"][-1]:.2f}[/red] kr "
-                stdscr.addstr(2,2, kurs_print)
-                time.sleep(1)
-                print(
+                stdscr.addstr(4, 0,
                     "Hvis du vil kjøpe aksjer skriv <b>\n"
                     "Hvis du vil selge aksjer skriv <s>\n"
                     "Skriv <g> hvis du vil se grafisk aksje kursen"
                     )
-        kommando = None
-        if not kommandoer.empty():
-            kommando = kommandoer.get()
+            kommando = stdscr.getch()
             if kommando == ord("b"):
-                rprint(f"Hvor mange aksjer vil du kjøpe?\n{kurs_print}\
-                    \ndu har [light_green]{db["penger"]:.2f}[/light_green] kr på kontoen")
-                kjøp_aksjer = int(kommandoer.get())
+                stdscr.clear()
+                stdscr.addstr(4, 2, f"Hvor mange aksjer vil du kjøpe?")
+                vis_kurs(2,2)
+                stdscr.addstr(6, 2, "du har ")
+                stdscr.addstr(f"{db["penger"]:.2f} ", c_green)
+                stdscr.addstr("kr på kontoen")
+                stdscr.refresh()
+                kjøp_aksjer = hent_tall(stdscr, 4, 35)
+                stdscr.clear()
                 if (db["penger"] - (kjøp_aksjer * db["kurs"][-1])) >= 0:
                     db["aksje_beholdning"] += kjøp_aksjer
                     db["penger"] -= (kjøp_aksjer * db["kurs"][-1])
-                    rprint(f"Du har kjøpt [light_green]{kjøp_aksjer}[/light_green] aksjer for [red]{(kjøp_aksjer * db["kurs"][-1]):.2f}[/red] kr. \
-                    \nDin aksje beholdning er nå verdt [light_green]{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}[/light_green] \
-                    \nDu har [red]{db["penger"]:.2f}[/red] kr igjen på kontoen.\
-                    \nDu har nå {db["aksje_beholdning"]} aksjer"
-                    )
+                    stdscr.addstr(4, 2, f"Du har kjøpt ")
+                    stdscr.addstr(f"{kjøp_aksjer} ", c_green)
+                    stdscr.addstr("aksjer for ")
+                    stdscr.addstr(f"{(kjøp_aksjer * db["kurs"][-1]):.2f} kr", c_red)
+                    stdscr.addstr(6, 2, "Din aksje beholdning er nå verdt ")
+                    stdscr.addstr(f"{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}", c_green)
+                    stdscr.addstr(8, 2, "Du har ")
+                    stdscr.addstr(f"{db["penger"]:.2f} ", c_red) 
+                    stdscr.addstr("kr igjen på kontoen.")
+                    stdscr.addstr(10, 2, "Du har nå ")
+                    stdscr.addstr(f"{db["aksje_beholdning"]} aksjer")
+                    stdscr.refresh()
+                    time.sleep(8)
+                    stdscr.clear()
                     with open("data.json", "w") as fil:
                         json.dump(db, fil)
                 else:
-                    rprint(f"Du har ikke penger nok på konto til å kjøpe [red]{kjøp_aksjer}[/red] aksjer")
-            if kommando == ord("s"):
-                rprint(
-                    f"Du har {db["aksje_beholdning"]} aksjer.\n"
-                    f"Aksjeverdien tilsvarer [light_green]{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}"
-                    )
-                print("Hvor mange aksjer vil du selge?")
-                selg_aksjer = int(kommandoer.get())
+                    stdscr.addstr(4, 2, "Du har ikke penger nok på konto til å kjøpe ")
+                    stdscr.addstr(f"{kjøp_aksjer}", c_red)
+                    stdscr.addstr("aksjer")
+            elif kommando == ord("s"):
+                stdscr.clear()
+                stdscr.addstr(4, 2, f"Du har {db["aksje_beholdning"]} aksjer")
+                stdscr.addstr(6, 2, "Aksjeverdien tilsvarer ")
+                stdscr.addstr(f"{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}", c_green)
+                stdscr.addstr(8, 2, "Hvor mange aksjer vil du selge?")
+                selg_aksjer = hent_tall(stdscr, 4, 35)
+                stdscr.clear()
                 if (db["aksje_beholdning"] - selg_aksjer) >= 0:
                     db["aksje_beholdning"] -= selg_aksjer
                     db["penger"] += (selg_aksjer * db["kurs"][-1])
-                    rprint(
-                        f"Du solgte [light_green]{selg_aksjer}[/light_green] aksjer for [light_green]{(selg_aksjer * db["kurs"][-1]):.2f}[/light_green] kr\n"
-                        f"Du har nå [light_green]{db["penger"]:.2f}[/light_green] kr på kontoen"
-                        )
+                    stdscr.addstr(4, 2,"Du solgte ")
+                    stdscr.addstr(f"{selg_aksjer} ", c_green)
+                    stdscr.addstr("aksjer for ")
+                    stdscr.addstr(f"{(selg_aksjer * db["kurs"][-1]):.2f} kr", c_green)
+                    stdscr.addstr(6, 2, "Du har nå ")
+                    stdscr.addstr(f"{db["penger"]:.2f} kr ", c_green)
+                    stdscr.addstr("på kontoen")
+                    stdscr.refresh()
+                    time.sleep(8)
+                    stdscr.clear()
                     with open("data.json", "w") as fil:
                         json.dump(db, fil)
                 else:
-                    print(f"Du har ikke nok antall aksjer til å selge {selg_aksjer} aksjer")
-        if kommando == ord("g"):
-            modus = "graf"
+                    stdscr.addstr(4, 2, f"Du har ikke nok antall aksjer til å selge {selg_aksjer} aksjer")
+            elif kommando == ord("g"):
+                stdscr.clear()
+                modus = "graf"
         if modus == "graf":
-            stdscr.addch(graf_y, graf_x, "*")
+            stdscr.addch(graf_y, graf_x, "*", c_green) if db["kurs"][-1] > db["kurs"][-2] \
+                else stdscr.addch(graf_y, graf_x, "*", c_red)
             graf_x += 1
+            if graf_x >= max_x:
+                graf_x = 0
+                stdscr.clear()
             if db["kurs"][-1] > db["kurs"][-2]:
-               graf_y -= 1
+                graf_y -= 1
             else:
                 graf_y += 1
+            graf_y = max(0, min(graf_y, max_y - 1))
+
         
         stdscr.refresh()
 
