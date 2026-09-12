@@ -29,6 +29,11 @@ def aksje_spill(stdscr):
         tall = int(stdscr.getstr(y, x).decode())
         stdscr.nodelay(True)
         return tall
+    def quit_kommando(kommando, modus):
+        if kommando == ord("q"):
+            stdscr.clear()
+            modus = "kurs"
+        return modus
     modus = "kurs"
     for x in range(1000):
         time.sleep(0.1)
@@ -36,10 +41,21 @@ def aksje_spill(stdscr):
             endring = random.uniform(-5, 5)
             db["start_kurs"] += endring
             db["kurs"].append(db["start_kurs"])
+            if modus == "graf":
+                if db["kurs"][-1] > db["kurs"][-2]:
+                    graf_y -= 1
+                    stdscr.addch(graf_y, graf_x, "*", c_green)
+                else:
+                    graf_y += 1
+                    stdscr.addch(graf_y, graf_x, "*", c_red)
+                graf_x += 1
+                graf_y = max(0, min(graf_y, max_y - 1))
 
             sist_oppdatert = time.time()
         stdscr.refresh()
         time.sleep(0.05)
+        kommando = stdscr.getch()
+        modus = quit_kommando(kommando, modus)
         if modus == "kurs":     
             if len(db["kurs"]) >= 2:
                 stdscr.addstr(4, 0,
@@ -47,7 +63,6 @@ def aksje_spill(stdscr):
                     "Hvis du vil selge aksjer skriv <s>\n"
                     "Skriv <g> hvis du vil se grafisk aksje kursen"
                     )
-            kommando = stdscr.getch()
             if kommando == ord("b"):
                 stdscr.clear()
                 stdscr.refresh()
@@ -112,20 +127,7 @@ def aksje_spill(stdscr):
                 stdscr.clear()
                 stdscr.refresh()
                 modus = "graf"
-        if modus == "graf":
-            stdscr.addch(graf_y, graf_x, "*", c_green) if db["kurs"][-1] > db["kurs"][-2] \
-                else stdscr.addch(graf_y, graf_x, "*", c_red)
-            graf_x += 1
-            if graf_x >= max_x:
-                graf_x = 0
-                stdscr.clear()
-            if db["kurs"][-1] > db["kurs"][-2]:
-                graf_y -= 1
-            else:
-                graf_y += 1
-            graf_y = max(0, min(graf_y, max_y - 1))
 
-        
         stdscr.refresh()
 
 if __name__ == "__main__":
