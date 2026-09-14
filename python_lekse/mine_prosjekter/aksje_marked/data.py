@@ -2,13 +2,37 @@ import os
 import json
 
 db = {
-"aksje_beholdning" : 0,
-"aksje_beholdning_verdi" : 0,
-"kurs" : [],
-"start_kurs" : 100.0,
-"penger" : 1000,
-"kjøps_verdi_beholdning": 0,
-"total_penger_brukt" : 0
+    "aksjer" : {
+        "aksjeBLÅ": {
+            "aksje_beholdning" : 0,
+            "aksje_beholdning_verdi" : 0,
+            "kurs" : [],
+            "start_kurs" : 100.0,
+            "penger" : 1000,
+            "kjøps_verdi_beholdning": 0,
+            "total_penger_brukt" : 0
+        },
+        "aksjeRød": {
+            "aksje_beholdning" : 0,
+            "aksje_beholdning_verdi" : 0,
+            "kurs" : [],
+            "start_kurs" : 100.0,
+            "penger" : 1000,
+            "kjøps_verdi_beholdning": 0,
+            "total_penger_brukt" : 0
+        },
+         "aksjeGul": {
+            "aksje_beholdning" : 0,
+            "aksje_beholdning_verdi" : 0,
+            "kurs" : [],
+            "start_kurs" : 100.0,
+            "penger" : 1000,
+            "kjøps_verdi_beholdning": 0,
+            "total_penger_brukt" : 0
+                }
+   
+}
+
 }
 
 if os.path.exists("data.json"):
