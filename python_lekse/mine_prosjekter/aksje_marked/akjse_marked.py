@@ -17,14 +17,17 @@ def aksje_spill(stdscr):
     c_red = curses.color_pair(2)
     sist_oppdatert = time.time()
 
-    def vis_kurs(y, x):
-        kurs = aksje["kurs"][-1]
-        forrige_kurs = aksje["kurs"][-2]
-        stdscr.addstr(y,x, "Kurs: ")
-        if kurs > forrige_kurs:
-            stdscr.addstr(y, x + 6, f"↑ {aksje["kurs"][-1]:.2f} kr", c_green)
-        else:
-            stdscr.addstr(y, x + 6, f"↓ {aksje["kurs"][-1]:.2f} kr", c_red)
+    def vis_kurs(aksje, y, x):
+        if len(aksje["kurs"]) >= 2:
+            kurs = aksje["kurs"][-1]
+            forrige_kurs = aksje["kurs"][-2]
+            stdscr.move(y, x)
+            stdscr.clrtoeol()
+            stdscr.addstr(y,x, "Kurs: ")
+            if kurs > forrige_kurs:
+                stdscr.addstr(y, x + 6, f"↑ {kurs:.2f} kr", c_green)
+            else:
+                stdscr.addstr(y, x + 6, f"↓ {kurs:.2f} kr", c_red)
         stdscr.refresh()
     def hent_tall(stdscr, y, x):
         stdscr.nodelay(False)
@@ -37,13 +40,21 @@ def aksje_spill(stdscr):
             modus = "kurs"
         return modus
     modus = "kurs"
-    for x in range(1000):
-        for navn, aksje in aksjer.items():
-        time.sleep(0.1)
+    while True:
+        time.sleep(0.2)
+        navn = list(aksjer.keys())
+        for i, aksje_navn in enumerate(navn):
+            aksje = aksjer[aksje_navn]
+            stdscr.addstr(i, 0, f"{i + 1}: {aksje_navn}")
+            x = len(f"{i + 1}: {aksje_navn}")
+            vis_kurs(aksje, i, x)
         if time.time() - sist_oppdatert >= 1:
-            endring = random.uniform(-5, 5)
-            aksje["start_kurs"] += endring
-            aksje["kurs"].append(aksje["start_kurs"])
+            for aksje_navn in navn:
+                aksje = aksjer[aksje_navn]
+
+                endring = random.uniform(-5, 5)
+                aksje["start_kurs"] += endring
+                aksje["kurs"].append(aksje["start_kurs"])
             if modus == "graf":
                 if aksje["kurs"][-1] > aksje["kurs"][-2]:
                     graf_y -= 1
@@ -56,22 +67,22 @@ def aksje_spill(stdscr):
 
             sist_oppdatert = time.time()
         stdscr.refresh()
-        time.sleep(0.05)
         kommando = stdscr.getch()
         modus = quit_kommando(kommando, modus)
-        if modus == "kurs":     
+        if modus == "kurs":
+            if kommando == ord("1"):
+                stdscr.addstr()
             if len(aksje["kurs"]) >= 2:
                 stdscr.addstr(4, 0,
                     "Hvis du vil kjøpe aksje skriv <b>\n"
                     "Hvis du vil selge aksje skriv <s>\n"
                     "Skriv <g> hvis du vil se grafisk aksje kursen"
                     )
-                vis_kurs(8, 0)
             if kommando == ord("b"):
                 stdscr.clear()
                 stdscr.refresh()
                 stdscr.addstr(4, 2, f"Hvor mange aksje vil du kjøpe?")
-                vis_kurs(2,2)
+                vis_kurs(aksje, 2,2)
                 stdscr.addstr(6, 2, "du har ")
                 stdscr.addstr(f"{aksje["penger"]:.2f} ", c_green)
                 stdscr.addstr("kr på kontoen")
