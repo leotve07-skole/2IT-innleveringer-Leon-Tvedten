@@ -23,12 +23,15 @@ def aksje_spill(stdscr):
             forrige_kurs = aksje["kurs"][-2]
             stdscr.move(y, x)
             stdscr.clrtoeol()
-            stdscr.addstr(y,x, "Kurs: ")
+            stdscr.addstr(y, x, " : ")
             if kurs > forrige_kurs:
-                stdscr.addstr(y, x + 6, f"↑ {kurs:.2f} kr", c_green)
+                tekst = f"↑ {kurs:.2f} kr"
+                stdscr.addstr(y, x + 3, tekst, c_green)
             else:
-                stdscr.addstr(y, x + 6, f"↓ {kurs:.2f} kr", c_red)
-        stdscr.refresh()
+                tekst = f"↓ {kurs:.2f} kr"
+                stdscr.addstr(y, x + 3, tekst, c_red)
+            return len(tekst) if len(tekst) > 0 else 0
+        return 0
     def hent_tall(stdscr, y, x):
         stdscr.nodelay(False)
         tall = int(stdscr.getstr(y, x).decode())
@@ -47,7 +50,17 @@ def aksje_spill(stdscr):
             aksje = aksjer[aksje_navn]
             stdscr.addstr(i, 0, f"{i + 1}: {aksje_navn}")
             x = len(f"{i + 1}: {aksje_navn}")
-            vis_kurs(aksje, i, x)
+            x += vis_kurs(aksje, i, x)
+            if aksje["aksje_beholdning"] > 0:
+                markedsverdi = aksje["aksje_beholdning"] * aksje["kurs"][-1]
+                avkastning = markedsverdi - aksje["kjøps_verdi_beholdning"]
+                avkastning_i_prosent = (avkastning / aksje["kjøps_verdi_beholdning"]) * 100
+            else:
+                avkastning = 0.0
+                avkastning_i_prosent = 0.0
+            differanse_farge = c_green if avkastning > 0 else c_red
+            stdscr.addstr(i, x + 1, f"Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
+            
         if time.time() - sist_oppdatert >= 1:
             for aksje_navn in navn:
                 aksje = aksjer[aksje_navn]
@@ -149,16 +162,7 @@ def aksje_spill(stdscr):
                 stdscr.clear()
                 stdscr.refresh()
                 modus = "graf"
-            if aksje["aksje_beholdning"] > 0:
-                markedsverdi = aksje["aksje_beholdning"] * aksje["kurs"][-1]
-                avkastning = markedsverdi - aksje["kjøps_verdi_beholdning"]
-                avkastning_i_prosent = (avkastning / aksje["kjøps_verdi_beholdning"]) * 100
-            else:
-                avkastning = 0.0
-                avkastning_i_prosent = 0.0
-            differanse_farge = c_green if avkastning > 0 else c_red
-            stdscr.addstr(9, 0, f"Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
-            stdscr.refresh()
+                stdscr.refresh()
         
         stdscr.refresh()
 with open("data.json", "w") as fil:
