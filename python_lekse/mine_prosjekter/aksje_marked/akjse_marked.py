@@ -12,8 +12,6 @@ def aksje_spill(stdscr):
     graf_y = max_y // 2
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
-    kjøp_aksjer = []
-    kjøp_aksjer_verdi = []
     c_green = curses.color_pair(1)
     c_red = curses.color_pair(2)
     sist_oppdatert = time.time()
@@ -76,16 +74,18 @@ def aksje_spill(stdscr):
                 stdscr.addstr(f"{db["penger"]:.2f} ", c_green)
                 stdscr.addstr("kr på kontoen")
                 stdscr.refresh()
-                kjøp_aksjer.append(hent_tall(stdscr, 4, 35))
-                kjøp_aksjer_verdi.append(db["kurs"][-1])
+                kjøp_aksjer = hent_tall(stdscr, 4, 35)
+                pris_for_kjøp = kjøp_aksjer * db["kurs"][-1]
+                db["total_penger_brukt"] += pris_for_kjøp
                 stdscr.clear()
-                if (db["penger"] - (kjøp_aksjer[-1] * db["kurs"][-1])) >= 0:
-                    db["aksje_beholdning"] += kjøp_aksjer[-1]
-                    db["penger"] -= (kjøp_aksjer[-1] * db["kurs"][-1])
+                if (db["penger"] - pris_for_kjøp) >= 0:
+                    db["aksje_beholdning"] += kjøp_aksjer
+                    db["penger"] -= pris_for_kjøp
+                    db["kjøps_verdi_beholdning"] += pris_for_kjøp
                     stdscr.addstr(4, 2, f"Du har kjøpt ")
-                    stdscr.addstr(f"{kjøp_aksjer[-1]} ", c_green)
+                    stdscr.addstr(f"{kjøp_aksjer} ", c_green)
                     stdscr.addstr("aksjer for ")
-                    stdscr.addstr(f"{(kjøp_aksjer[-1] * db["kurs"][-1]):.2f} kr", c_red)
+                    stdscr.addstr(f"{pris_for_kjøp:.2f} kr", c_red)
                     stdscr.addstr(6, 2, "Din aksje beholdning er nå verdt ")
                     stdscr.addstr(f"{(db["aksje_beholdning"] * db["kurs"][-1]):.2f}", c_green)
                     stdscr.addstr(8, 2, "Du har ")
@@ -100,7 +100,7 @@ def aksje_spill(stdscr):
                         json.dump(db, fil)
                 else:
                     stdscr.addstr(4, 2, "Du har ikke penger nok på konto til å kjøpe ")
-                    stdscr.addstr(f"{kjøp_aksjer[-1]}", c_red)
+                    stdscr.addstr(f"{kjøp_aksjer}", c_red)
                     stdscr.addstr("aksjer")
             elif kommando == ord("s"):
                 stdscr.clear()
@@ -113,8 +113,10 @@ def aksje_spill(stdscr):
                 selg_aksjer = hent_tall(stdscr, 4, 35)
                 stdscr.clear()
                 if (db["aksje_beholdning"] - selg_aksjer) >= 0:
+                    snittpris = db["kjøps_verdi_beholdning"] / db["aksje_beholdning"] if db["aksje_beholdning"] > 0 else 0
                     db["aksje_beholdning"] -= selg_aksjer
                     db["penger"] += (selg_aksjer * db["kurs"][-1])
+                    db["kjøps_verdi_beholdning"] -= (selg_aksjer * snittpris)
                     stdscr.addstr(4, 2,"Du solgte ")
                     stdscr.addstr(f"{selg_aksjer} ", c_green)
                     stdscr.addstr("aksjer for ")
@@ -133,10 +135,13 @@ def aksje_spill(stdscr):
                 stdscr.clear()
                 stdscr.refresh()
                 modus = "graf"
-            gjennomsnittpris = max(0, sum(kjøp_aksjer_verdi) / antall) if (antall := sum(kjøp_aksjer)) else 0
-            avkastning = float(f"{(db["kurs"][-1] - gjennomsnittpris) * sum(kjøp_aksjer)}")
+            if db["aksje_beholdning"] > 0:
+                markedsverdi = db["aksje_beholdning"] * db["kurs"][-1]
+                avkastning = markedsverdi - db["kjøps_verdi_beholdning"]
+            else:
+                avkastning = 0.0
             differanse_farge = c_green if avkastning > 0 else c_red
-            stdscr.addstr(9, 0, f"{avkastning:.2f}", differanse_farge)
+            stdscr.addstr(9, 0, f"{avkastning:.2f} kr", differanse_farge)
             stdscr.refresh()
 
         stdscr.refresh()
