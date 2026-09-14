@@ -138,12 +138,13 @@ def aksje_spill(stdscr):
             if db["aksje_beholdning"] > 0:
                 markedsverdi = db["aksje_beholdning"] * db["kurs"][-1]
                 avkastning = markedsverdi - db["kjøps_verdi_beholdning"]
+                avkastning_i_prosent = (avkastning / db["kjøps_verdi_beholdning"]) * 100
             else:
                 avkastning = 0.0
             differanse_farge = c_green if avkastning > 0 else c_red
-            stdscr.addstr(9, 0, f"{avkastning:.2f} kr", differanse_farge)
+            stdscr.addstr(9, 0, f"Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
             stdscr.refresh()
-
+        
         stdscr.refresh()
 
 if __name__ == "__main__":
