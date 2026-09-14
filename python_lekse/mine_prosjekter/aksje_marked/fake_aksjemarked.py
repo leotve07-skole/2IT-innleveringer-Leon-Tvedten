@@ -58,6 +58,8 @@ def aksje_spill(stdscr):
         kommando = stdscr.getch()
         modus = quit_kommando(kommando, modus)
         if modus == "kurs":     
+            kjøp_aksjer = 0
+            kjøp_aksjer_verdi = 0
             if len(db["kurs"]) >= 2:
                 stdscr.addstr(4, 0,
                     "Hvis du vil kjøpe aksjer skriv <b>\n"
@@ -75,6 +77,7 @@ def aksje_spill(stdscr):
                 stdscr.addstr("kr på kontoen")
                 stdscr.refresh()
                 kjøp_aksjer = hent_tall(stdscr, 4, 35)
+                kjøp_aksjer_verdi = db["kurs"][-1]
                 stdscr.clear()
                 if (db["penger"] - (kjøp_aksjer * db["kurs"][-1])) >= 0:
                     db["aksje_beholdning"] += kjøp_aksjer
@@ -130,6 +133,9 @@ def aksje_spill(stdscr):
                 stdscr.clear()
                 stdscr.refresh()
                 modus = "graf"
+            aksje_differanse = f"{(kjøp_aksjer_verdi - db["kurs"][-1]):.2f}"
+            differanse_farge = c_green if kjøp_aksjer_verdi > 0 else c_red
+            stdscr.addstr(9, 0, f"{aksje_differanse}", differanse_farge)
 
         stdscr.refresh()
 
