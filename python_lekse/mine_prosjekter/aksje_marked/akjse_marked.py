@@ -49,14 +49,16 @@ def aksje_spill(stdscr):
         time.sleep(0.2)
         navn = list(aksjer.keys())
         if modus == "kurs":
-            valg = kommando - ord("1")
             for i, aksje_navn in enumerate(navn):
+                valg = kommando - ord("1")
                 aksje = aksjer[aksje_navn]
+                for l in range(len(aksje["kurs"])) :
+                    aksje["kurs"][l] = max(0, int(aksje["kurs"][l]))
                 if modus == "kurs":
                     stdscr.addstr(i, 0, f"{i + 1}: {aksje_navn}")
                     x = len(f"{i + 1}: {aksje_navn}")
                     x += vis_kurs(aksje, i, x)
-                    if aksje["aksje_beholdning"] > 0:
+                    if aksje["aksje_beholdning"] > 0 and aksje["kjøps_verdi_beholdning"] > 0:
                         markedsverdi = aksje["aksje_beholdning"] * aksje["kurs"][-1]
                         avkastning = markedsverdi - aksje["kjøps_verdi_beholdning"]
                         avkastning_i_prosent = (avkastning / aksje["kjøps_verdi_beholdning"]) * 100
@@ -113,12 +115,12 @@ def aksje_spill(stdscr):
                     valgt_aksje["total_penger_brukt"] += pris_for_kjøp
                     stdscr.clear()
                     if (aksje["penger"] - pris_for_kjøp) >= 0:
-                        aksje["aksje_beholdning"] += kjøp_aksjer
+                        valgt_aksje["aksje_beholdning"] += kjøp_aksjer
                         aksje["penger"] -= pris_for_kjøp
                         valgt_aksje["kjøps_verdi_beholdning"] += pris_for_kjøp
                         stdscr.addstr(4, 0, f"Du har kjøpt ")
                         stdscr.addstr(f"{kjøp_aksjer} ", c_green)
-                        stdscr.addstr("aksje for ")
+                        stdscr.addstr("aksjer for ")
                         stdscr.addstr(f"{pris_for_kjøp:.2f} kr", c_red)
                         stdscr.addstr(6, 0, "Din aksje beholdning er nå verdt ")
                         stdscr.addstr(f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
@@ -130,20 +132,25 @@ def aksje_spill(stdscr):
                         stdscr.refresh()
                         time.sleep(8)
                         stdscr.clear()
+                        modus = "kurs"
                         with open("data.json", "w") as fil:
                             json.dump(db, fil, indent=4)
                     else:
-                        stdscr.addstr(4, 2, "Du har ikke penger nok på konto til å kjøpe ")
+                        stdscr.addstr(4, 0, "Du har ikke penger nok på konto til å kjøpe ")
                         stdscr.addstr(f"{kjøp_aksjer}", c_red)
-                        stdscr.addstr("aksje")
+                        stdscr.addstr("aksjer")
+                        time.sleep(3)
+                        stdscr.clear()
+                        modus = "kurs"
                 elif kommando == ord("s"):
                     modus = "selge_aksje"
                     stdscr.clear()
-                    stdscr.addstr(i, 0, f"Du har {valgt_aksje["aksje_beholdning"]} aksjer")
-                    stdscr.addstr(i + 1, 0, "Aksjeverdien tilsvarer ")
-                    stdscr.addstr(i, 0, f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
-                    stdscr.addstr(i, 0, "Hvor mange aksjer av hvilken vil du selge?")
-                    vis_kurs(aksje, i, 0)
+                    stdscr.addstr(1, 0, f"{navn[valg]}")
+                    vis_kurs(aksje, 1, (len(navn[valg])))
+                    stdscr.addstr(3, 0, f"Du har {valgt_aksje["aksje_beholdning"]} aksjer")
+                    stdscr.addstr(4, 0, "Aksjeverdien tilsvarer ")
+                    stdscr.addstr(4, len("Aksjeverdien tilsvarer "), f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
+                    stdscr.addstr(5, 0, "Hvor mange aksjer av hvilken vil du selge?")
                                     
                     stdscr.refresh()
                     selg_aksjer = hent_tall(stdscr, 4, 35)
@@ -153,11 +160,11 @@ def aksje_spill(stdscr):
                         valgt_aksje["aksje_beholdning"] -= selg_aksjer
                         aksje["penger"] += (selg_aksjer * aksje["kurs"][-1])
                         valgt_aksje["kjøps_verdi_beholdning"] -= (selg_aksjer * snittpris)
-                        stdscr.addstr(4, 2,"Du solgte ")
+                        stdscr.addstr(4, 0,"Du solgte ")
                         stdscr.addstr(f"{selg_aksjer} ", c_green)
                         stdscr.addstr("aksje for ")
                         stdscr.addstr(f"{(selg_aksjer * valgt_aksje["kurs"][-1]):.2f} kr", c_green)
-                        stdscr.addstr(6, 2, "Du har nå ")
+                        stdscr.addstr(6, 0, "Du har nå ")
                         stdscr.addstr(f"{aksje["penger"]:.2f} kr ", c_green)
                         stdscr.addstr("på kontoen")
                         stdscr.refresh()
@@ -167,7 +174,12 @@ def aksje_spill(stdscr):
                             json.dump(db, fil, indent=4)
 
                     else:
-                        stdscr.addstr(4, 2, f"Du har ikke nok antall aksje til å selge {selg_aksjer} aksje")
+                        stdscr.clear()
+                        stdscr.addstr(4, 0, f"Du har ikke nok antall aksjer til å selge {selg_aksjer} aksjer")
+                        stdscr.refresh()
+                        time.sleep(3)
+                        stdscr.clear()
+                        modus = "kurs"
                 elif kommando == ord("g"):
                     stdscr.clear()
                     stdscr.refresh()
