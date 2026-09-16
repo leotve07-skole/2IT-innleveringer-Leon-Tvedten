@@ -3,9 +3,13 @@ import time
 import json
 import curses
 from data import db
+
 aksjer = db["aksjer"]
+konto = db["konto"]
+penger = konto["penger"]
 
 def aksje_spill(stdscr):
+    global penger
     stdscr.nodelay(True)
     curses.start_color()
     max_y, max_x = stdscr.getmaxyx()
@@ -113,18 +117,20 @@ def aksje_spill(stdscr):
                     stdscr.refresh()
                     stdscr.addstr(2, 0, f"{navn[valg]}", askje_farger[valg])
                     vis_kurs(valgt_aksje, 2,len(navn[valg]))
-                    stdscr.addstr(4, 0, f"Hvor mange {navn[valg]} aksjer vil du kjøpe?")
+                    stdscr.addstr(4, 0, f"Hvor mange ")
+                    stdscr.addstr(4, len("Hvor mange "), f"{navn[valg]}", askje_farger[valg])
+                    stdscr.addstr(" aksjer vil du kjøpe?")
                     stdscr.addstr(6, 0, "du har ")
-                    stdscr.addstr(f"{aksje["penger"]:.2f} kr ", c_green)
+                    stdscr.addstr(f"{penger:.2f} kr ", c_green)
                     stdscr.addstr("på kontoen")
                     stdscr.refresh()
                     kjøp_aksjer = hent_tall(stdscr, 4, 35)
                     pris_for_kjøp = kjøp_aksjer * valgt_aksje["kurs"][-1]
                     valgt_aksje["total_penger_brukt"] += pris_for_kjøp
                     stdscr.clear()
-                    if (aksje["penger"] - pris_for_kjøp) >= 0:
+                    if (penger - pris_for_kjøp) >= 0:
                         valgt_aksje["aksje_beholdning"] += kjøp_aksjer
-                        aksje["penger"] -= pris_for_kjøp
+                        penger -= pris_for_kjøp
                         valgt_aksje["kjøps_verdi_beholdning"] += pris_for_kjøp
                         stdscr.addstr(4, 0, f"Du har kjøpt ")
                         stdscr.addstr(f"{kjøp_aksjer} ", c_green)
@@ -133,10 +139,12 @@ def aksje_spill(stdscr):
                         stdscr.addstr(6, 0, "Din aksje beholdning er nå verdt ")
                         stdscr.addstr(f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
                         stdscr.addstr(8, 0, "Du har ")
-                        stdscr.addstr(f"{aksje["penger"]:.2f} kr ", c_red) 
+                        stdscr.addstr(f"{penger:.2f} kr ", c_red) 
                         stdscr.addstr("igjen på kontoen.")
                         stdscr.addstr(10, 0, "Du har nå ")
-                        stdscr.addstr(f"{valgt_aksje["aksje_beholdning"]} {navn[valg]} aksjer")
+                        stdscr.addstr(f"{valgt_aksje["aksje_beholdning"]} ")
+                        stdscr.addstr(10, len(f"Du har nå {valgt_aksje["aksje_beholdning"]}"), f"{navn[valg]} ", askje_farger[valg])
+                        stdscr.addstr("aksjer")
                         stdscr.refresh()
                         time.sleep(6)
                         stdscr.clear()
@@ -155,25 +163,29 @@ def aksje_spill(stdscr):
                     stdscr.clear()
                     stdscr.addstr(1, 0, f"{navn[valg]}", askje_farger[valg])
                     vis_kurs(aksje, 1, (len(navn[valg])))
-                    stdscr.addstr(3, 0, f"Du har {valgt_aksje["aksje_beholdning"]} aksjer")
-                    stdscr.addstr(4, 0, "Aksjeverdien tilsvarer ")
-                    stdscr.addstr(4, len("Aksjeverdien tilsvarer "), f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
+                    stdscr.addstr(3, 0, temp_text := f"Du har {valgt_aksje["aksje_beholdning"]} ")
+                    stdscr.addstr(3, len(temp_text), navn[valg], askje_farger[valg])
+                    stdscr.addstr(" aksjer")
+                    stdscr.addstr(4, 0, temp_text := "Aksjeverdien tilsvarer ")
+                    stdscr.addstr(4, len(temp_text), f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
                     stdscr.addstr(5, 0, "Hvor mange aksjer av hvilken vil du selge?")
-                                    
+                    del temp_text
                     stdscr.refresh()
                     selg_aksjer = hent_tall(stdscr, 4, 35)
                     stdscr.clear()
                     if (valgt_aksje["aksje_beholdning"] - selg_aksjer) >= 0:
                         snittpris = valgt_aksje["kjøps_verdi_beholdning"] / valgt_aksje["aksje_beholdning"] if valgt_aksje["aksje_beholdning"] > 0 else 0
                         valgt_aksje["aksje_beholdning"] -= selg_aksjer
-                        aksje["penger"] += (selg_aksjer * aksje["kurs"][-1])
+                        penger += (selg_aksjer * aksje["kurs"][-1])
                         valgt_aksje["kjøps_verdi_beholdning"] -= (selg_aksjer * snittpris)
-                        stdscr.addstr(4, 0,"Du solgte ")
+                        stdscr.addstr(4, 0, temp_text := "Du solgte ")
                         stdscr.addstr(f"{selg_aksjer} ", c_green)
-                        stdscr.addstr("aksjer for ")
+                        temp_text += f"{selg_aksjer} "
+                        stdscr.addstr(4, len(temp_text), navn[valg], askje_farger[valg])
+                        stdscr.addstr(" aksjer for ")
                         stdscr.addstr(f"{(selg_aksjer * valgt_aksje["kurs"][-1]):.2f} kr", c_green)
                         stdscr.addstr(6, 0, "Du har nå ")
-                        stdscr.addstr(f"{aksje["penger"]:.2f} kr ", c_green)
+                        stdscr.addstr(f"{penger:.2f} kr ", c_green)
                         stdscr.addstr("på kontoen")
                         stdscr.refresh()
                         time.sleep(6)
