@@ -92,12 +92,15 @@ def aksje_spill(stdscr):
                 sist_oppdatert = time.time()
             stdscr.refresh()
             if 0 <= valg < len(navn):
+                stdscr.clear()
                 valgt_aksje = aksjer[navn[valg]]
                 modus = "valgt_aksje"
         elif modus == "valgt_aksje":
                 stdscr.clear()
+                stdscr.move(i, len(navn[valg]))
+                stdscr.clrtoeol()
                 stdscr.addstr(i, 0, f"{navn[valg]}", askje_farger[valg])
-                stdscr.addstr(i, len(navn[valg]), f"{vis_kurs(valgt_aksje, i, len(navn[valg]) + 2)}")
+                vis_kurs(valgt_aksje, i, len(navn[valg]))
 
                 stdscr.addstr(4, 0, "b = kjøp")
                 stdscr.addstr(5, 0, "s = selg")
