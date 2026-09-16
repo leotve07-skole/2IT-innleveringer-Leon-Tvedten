@@ -13,9 +13,13 @@ def aksje_spill(stdscr):
     graf_y = max_y // 2
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     c_green = curses.color_pair(1)
     c_red = curses.color_pair(2)
     sist_oppdatert = time.time()
+    askje_farger = [curses.color_pair(3), curses.color_pair(4), curses.color_pair(5)]
 
     def vis_kurs(aksje, y, x):
         if len(aksje["kurs"]) >= 2:
@@ -55,7 +59,7 @@ def aksje_spill(stdscr):
                 for l in range(len(aksje["kurs"])) :
                     aksje["kurs"][l] = max(0, int(aksje["kurs"][l]))
                 if modus == "kurs":
-                    stdscr.addstr(i, 0, f"{i + 1}: {aksje_navn}")
+                    stdscr.addstr(i, 0, f"{i + 1}: {aksje_navn}", askje_farger[i])
                     x = len(f"{i + 1}: {aksje_navn}")
                     x += vis_kurs(aksje, i, x)
                     if aksje["aksje_beholdning"] > 0 and aksje["kjøps_verdi_beholdning"] > 0:
@@ -92,7 +96,8 @@ def aksje_spill(stdscr):
                 modus = "valgt_aksje"
         elif modus == "valgt_aksje":
                 stdscr.clear()
-                stdscr.addstr(i, 0, f"{navn[valg]}{vis_kurs(valgt_aksje, i, len(navn[valg]) + 2)}")
+                stdscr.addstr(i, 0, f"{navn[valg]}", askje_farger[valg])
+                stdscr.addstr(i, len(navn[valg]), f"{vis_kurs(valgt_aksje, i, len(navn[valg]) + 2)}")
 
                 stdscr.addstr(4, 0, "b = kjøp")
                 stdscr.addstr(5, 0, "s = selg")
@@ -103,7 +108,7 @@ def aksje_spill(stdscr):
                     modus = "kjøp_aksje"
                     stdscr.clear()
                     stdscr.refresh()
-                    stdscr.addstr(2, 0, f"{navn[valg]}")
+                    stdscr.addstr(2, 0, f"{navn[valg]}", askje_farger[valg])
                     vis_kurs(valgt_aksje, 2,len(navn[valg]))
                     stdscr.addstr(4, 0, f"Hvor mange {navn[valg]} aksjer vil du kjøpe?")
                     stdscr.addstr(6, 0, "du har ")
@@ -130,7 +135,7 @@ def aksje_spill(stdscr):
                         stdscr.addstr(10, 0, "Du har nå ")
                         stdscr.addstr(f"{valgt_aksje["aksje_beholdning"]} {navn[valg]} aksjer")
                         stdscr.refresh()
-                        time.sleep(8)
+                        time.sleep(6)
                         stdscr.clear()
                         modus = "kurs"
                         with open("data.json", "w") as fil:
@@ -145,7 +150,7 @@ def aksje_spill(stdscr):
                 elif kommando == ord("s"):
                     modus = "selge_aksje"
                     stdscr.clear()
-                    stdscr.addstr(1, 0, f"{navn[valg]}")
+                    stdscr.addstr(1, 0, f"{navn[valg]}", askje_farger[valg])
                     vis_kurs(aksje, 1, (len(navn[valg])))
                     stdscr.addstr(3, 0, f"Du har {valgt_aksje["aksje_beholdning"]} aksjer")
                     stdscr.addstr(4, 0, "Aksjeverdien tilsvarer ")
@@ -162,14 +167,15 @@ def aksje_spill(stdscr):
                         valgt_aksje["kjøps_verdi_beholdning"] -= (selg_aksjer * snittpris)
                         stdscr.addstr(4, 0,"Du solgte ")
                         stdscr.addstr(f"{selg_aksjer} ", c_green)
-                        stdscr.addstr("aksje for ")
+                        stdscr.addstr("aksjer for ")
                         stdscr.addstr(f"{(selg_aksjer * valgt_aksje["kurs"][-1]):.2f} kr", c_green)
                         stdscr.addstr(6, 0, "Du har nå ")
                         stdscr.addstr(f"{aksje["penger"]:.2f} kr ", c_green)
                         stdscr.addstr("på kontoen")
                         stdscr.refresh()
-                        time.sleep(8)
+                        time.sleep(6)
                         stdscr.clear()
+                        modus = "kurs"
                         with open("data.json", "w") as fil:
                             json.dump(db, fil, indent=4)
 
