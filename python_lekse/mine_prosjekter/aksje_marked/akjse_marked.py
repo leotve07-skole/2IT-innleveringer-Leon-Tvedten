@@ -57,35 +57,37 @@ def aksje_spill(stdscr):
         time.sleep(0.2)
         navn = list(aksjer.keys())
         if modus == "kurs":
-            quarter_x = int(max_x / 4)
-            three_quarter_x = int(max_x / 1.5)
             for i, aksje_navn in enumerate(navn):
                 valg = kommando - ord("1")
                 aksje = aksjer[aksje_navn]
+                x = 0
+                if aksje["aksje_beholdning"] > 0 and aksje["kjøps_verdi_beholdning"] > 0:
+                    markedsverdi = aksje["aksje_beholdning"] * aksje["kurs"][-1]
+                    avkastning = markedsverdi - aksje["kjøps_verdi_beholdning"]
+                    avkastning_i_prosent = (avkastning / aksje["kjøps_verdi_beholdning"]) * 100
+                else:
+                    avkastning = 0.0
+                    avkastning_i_prosent = 0.0
+                vis_kurs_lengde = f"↑ {max(aksje["kurs"]):.2f} kr"
+                kurs_tekst = f"{i + 1}: {aksje_navn} : {vis_kurs_lengde} Avkastning: {avkastning:.2f} kr .{avkastning_i_prosent:.2f}%"
+                content_width = len(kurs_tekst)
+                place_kurs_middle = (max_x - content_width) // 2
+                differanse_farge = c_green if avkastning > 0 else c_red
+                stdscr.addstr(i + 1, place_kurs_middle + x + 3, f" Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
+                
                 for l in range(len(aksje["kurs"])) :
                     aksje["kurs"][l] = max(0, int(aksje["kurs"][l]))
                 if modus == "kurs":
-                    stdscr.addstr(i + 1, quarter_x + 1, f"{i + 1}: {aksje_navn}", aksje_farger[i])
+                    stdscr.addstr(i + 1, place_kurs_middle + 1, f"{i + 1}: {aksje_navn}", aksje_farger[i])
                     x = len(f"{i + 1}: {aksje_navn}") + 1
-                    x += vis_kurs(aksje, i + 1, quarter_x + x)
-                    if aksje["aksje_beholdning"] > 0 and aksje["kjøps_verdi_beholdning"] > 0:
-                        markedsverdi = aksje["aksje_beholdning"] * aksje["kurs"][-1]
-                        avkastning = markedsverdi - aksje["kjøps_verdi_beholdning"]
-                        avkastning_i_prosent = (avkastning / aksje["kjøps_verdi_beholdning"]) * 100
-                    else:
-                        avkastning = 0.0
-                        avkastning_i_prosent = 0.0
-                    differanse_farge = c_green if avkastning > 0 else c_red
-                    stdscr.addstr(i + 1, quarter_x + x + 3, f" Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
-            vis_kurs_lengde = f"↑ {max(aksje["kurs"]):.2f} kr"
-
-            for column in range(quarter_x, quarter_x + len(f"{i + 1}: {aksje_navn} : {vis_kurs_lengde} Avkastning: {avkastning:.2f} kr .{avkastning_i_prosent:.2f}%") + 5):
-                stdscr.addstr(len(navn) + 1, column, "-")
-                stdscr.addstr(0, column, "-")
+                    x += vis_kurs(aksje, i + 1, place_kurs_middle + x)
+            for column in range(place_kurs_middle, place_kurs_middle + len(kurs_tekst) + 5):
+                stdscr.addstr(len(navn) + 1 + max_y // 2, column, "-")
+                stdscr.addstr(max_y // 2, column, "-")
             for row in range(len(navn)):
                 row += 1
-                stdscr.addstr(row, quarter_x, "╎")
-                stdscr.addstr(row, column, "╎")
+                stdscr.addstr(row + max_y // 2, place_kurs_middle, "╎")
+                stdscr.addstr(row + max_y // 2, column, "╎")
             if time.time() - sist_oppdatert >= 1:
                 for aksje_navn in navn:
                     aksje = aksjer[aksje_navn]
