@@ -2,6 +2,7 @@ import random
 import time
 import json
 import curses
+import os
 from data import db
 
 aksjer = db["aksjer"]
@@ -149,7 +150,7 @@ def aksje_spill(stdscr):
                         time.sleep(6)
                         stdscr.clear()
                         modus = "kurs"
-                        with open("data.json", "w") as fil:
+                        with open(os.path.join(os.path.dirname(__file__), "data.json"),  "w") as fil:
                             json.dump(db, fil, indent=4)
                     else:
                         stdscr.addstr(4, 0, "Du har ikke penger nok på konto til å kjøpe ")
@@ -191,7 +192,7 @@ def aksje_spill(stdscr):
                         time.sleep(6)
                         stdscr.clear()
                         modus = "kurs"
-                        with open("data.json", "w") as fil:
+                        with open(os.path.join(os.path.dirname(__file__), "data.json"),  "w") as fil:
                             json.dump(db, fil, indent=4)
 
                     else:
@@ -208,7 +209,7 @@ def aksje_spill(stdscr):
                     stdscr.refresh()
             
         stdscr.refresh()
-with open("data.json", "w") as fil:
-    json.dump(db, fil, indent=4)    
+with open(os.path.join(os.path.dirname(__file__), "data.json"),  "w") as fil:
+    json.dump(db, fil, indent=4)
 if __name__ == "__main__":
     curses.wrapper(aksje_spill)
