@@ -23,7 +23,7 @@ def aksje_spill(stdscr):
     c_green = curses.color_pair(1)
     c_red = curses.color_pair(2)
     sist_oppdatert = time.time()
-    askje_farger = [curses.color_pair(3), curses.color_pair(4), curses.color_pair(5)]
+    aksje_farger = [curses.color_pair(3), curses.color_pair(4), curses.color_pair(5)]
 
     def vis_kurs(aksje, y, x):
         if len(aksje["kurs"]) >= 2:
@@ -57,15 +57,17 @@ def aksje_spill(stdscr):
         time.sleep(0.2)
         navn = list(aksjer.keys())
         if modus == "kurs":
+            quarter_x = int(max_x / 4)
+            three_quarter_x = int(max_x / 1.5)
             for i, aksje_navn in enumerate(navn):
                 valg = kommando - ord("1")
                 aksje = aksjer[aksje_navn]
                 for l in range(len(aksje["kurs"])) :
                     aksje["kurs"][l] = max(0, int(aksje["kurs"][l]))
                 if modus == "kurs":
-                    stdscr.addstr(i, 0, f"{i + 1}: {aksje_navn}", askje_farger[i])
-                    x = len(f"{i + 1}: {aksje_navn}")
-                    x += vis_kurs(aksje, i, x)
+                    stdscr.addstr(i + 1, quarter_x + 1, f"{i + 1}: {aksje_navn}", aksje_farger[i])
+                    x = len(f"{i + 1}: {aksje_navn}") + 1
+                    x += vis_kurs(aksje, i + 1, quarter_x + x)
                     if aksje["aksje_beholdning"] > 0 and aksje["kjøps_verdi_beholdning"] > 0:
                         markedsverdi = aksje["aksje_beholdning"] * aksje["kurs"][-1]
                         avkastning = markedsverdi - aksje["kjøps_verdi_beholdning"]
@@ -74,8 +76,16 @@ def aksje_spill(stdscr):
                         avkastning = 0.0
                         avkastning_i_prosent = 0.0
                     differanse_farge = c_green if avkastning > 0 else c_red
-                    stdscr.addstr(i, x + 1, f"Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
-                
+                    stdscr.addstr(i + 1, quarter_x + x + 3, f" Avkastning: {avkastning:.2f} kr {"+" if avkastning > 0 else ""}{avkastning_i_prosent:.2f}%".ljust(50), differanse_farge)
+            vis_kurs_lengde = f"↑ {max(aksje["kurs"]):.2f} kr"
+
+            for column in range(quarter_x, quarter_x + len(f"{i + 1}: {aksje_navn} : {vis_kurs_lengde} Avkastning: {avkastning:.2f} kr .{avkastning_i_prosent:.2f}%") + 5):
+                stdscr.addstr(len(navn) + 1, column, "-")
+                stdscr.addstr(0, column, "-")
+            for row in range(len(navn)):
+                row += 1
+                stdscr.addstr(row, quarter_x, "╎")
+                stdscr.addstr(row, column, "╎")
             if time.time() - sist_oppdatert >= 1:
                 for aksje_navn in navn:
                     aksje = aksjer[aksje_navn]
@@ -103,7 +113,7 @@ def aksje_spill(stdscr):
                 stdscr.clear()
                 stdscr.move(i, len(navn[valg]))
                 stdscr.clrtoeol()
-                stdscr.addstr(i, 0, f"{navn[valg]}", askje_farger[valg])
+                stdscr.addstr(i, 0, f"{navn[valg]}", aksje_farger[valg])
                 vis_kurs(valgt_aksje, i, len(navn[valg]))
 
                 stdscr.addstr(4, 0, "b = kjøp")
@@ -115,10 +125,10 @@ def aksje_spill(stdscr):
                     modus = "kjøp_aksje"
                     stdscr.clear()
                     stdscr.refresh()
-                    stdscr.addstr(2, 0, f"{navn[valg]}", askje_farger[valg])
+                    stdscr.addstr(2, 0, f"{navn[valg]}", aksje_farger[valg])
                     vis_kurs(valgt_aksje, 2,len(navn[valg]))
                     stdscr.addstr(4, 0, f"Hvor mange ")
-                    stdscr.addstr(4, len("Hvor mange "), f"{navn[valg]}", askje_farger[valg])
+                    stdscr.addstr(4, len("Hvor mange "), f"{navn[valg]}", aksje_farger[valg])
                     stdscr.addstr(" aksjer vil du kjøpe?")
                     stdscr.addstr(6, 0, "du har ")
                     stdscr.addstr(f"{penger:.2f} kr ", c_green)
@@ -143,7 +153,7 @@ def aksje_spill(stdscr):
                         stdscr.addstr("igjen på kontoen.")
                         stdscr.addstr(10, 0, "Du har nå ")
                         stdscr.addstr(f"{valgt_aksje["aksje_beholdning"]} ")
-                        stdscr.addstr(10, len(f"Du har nå {valgt_aksje["aksje_beholdning"]}"), f"{navn[valg]} ", askje_farger[valg])
+                        stdscr.addstr(10, len(f"Du har nå {valgt_aksje["aksje_beholdning"]}"), f"{navn[valg]} ", aksje_farger[valg])
                         stdscr.addstr("aksjer")
                         stdscr.refresh()
                         time.sleep(6)
@@ -161,10 +171,10 @@ def aksje_spill(stdscr):
                 elif kommando == ord("s"):
                     modus = "selge_aksje"
                     stdscr.clear()
-                    stdscr.addstr(1, 0, f"{navn[valg]}", askje_farger[valg])
+                    stdscr.addstr(1, 0, f"{navn[valg]}", aksje_farger[valg])
                     vis_kurs(aksje, 1, (len(navn[valg])))
                     stdscr.addstr(3, 0, temp_text := f"Du har {valgt_aksje["aksje_beholdning"]} ")
-                    stdscr.addstr(3, len(temp_text), navn[valg], askje_farger[valg])
+                    stdscr.addstr(3, len(temp_text), navn[valg], aksje_farger[valg])
                     stdscr.addstr(" aksjer")
                     stdscr.addstr(4, 0, temp_text := "Aksjeverdien tilsvarer ")
                     stdscr.addstr(4, len(temp_text), f"{(valgt_aksje["aksje_beholdning"] * valgt_aksje["kurs"][-1]):.2f}", c_green)
@@ -181,7 +191,7 @@ def aksje_spill(stdscr):
                         stdscr.addstr(4, 0, temp_text := "Du solgte ")
                         stdscr.addstr(f"{selg_aksjer} ", c_green)
                         temp_text += f"{selg_aksjer} "
-                        stdscr.addstr(4, len(temp_text), navn[valg], askje_farger[valg])
+                        stdscr.addstr(4, len(temp_text), navn[valg], aksje_farger[valg])
                         stdscr.addstr(" aksjer for ")
                         stdscr.addstr(f"{(selg_aksjer * valgt_aksje["kurs"][-1]):.2f} kr", c_green)
                         stdscr.addstr(6, 0, "Du har nå ")
