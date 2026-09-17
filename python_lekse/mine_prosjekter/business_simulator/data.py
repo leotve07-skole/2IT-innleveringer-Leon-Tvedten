@@ -3,7 +3,7 @@ import json
 
 db = {
     "stats":{
-        "money": 0
+        "money": 100
     }
 }
 if os.path.exists("data.json"):
