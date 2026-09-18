@@ -9,6 +9,10 @@ pygame.display.set_caption("Business_simulator")
 
 penger = db["stats"]["money"]
 number_sprites = []
+
+clock = pygame.time.Clock()
+last_update = pygame.time.get_ticks()
+
 for i in range(10):
     number_sprites_path = f"assets/pixel_art/numbers/num_{i}.png"
     num_sprite_img = pygame.image.load(number_sprites_path).convert_alpha()
@@ -40,7 +44,11 @@ while running:
         current_x += digit_image.get_width() + font_spacing
 
     pygame.display.flip()
+    if(pygame.time.get_ticks() - last_update >= 1000 ):
+        db["stats"]["money"] += 1
+        last_update = pygame.time.get_ticks()
 
+    clock.tick(60)
 
 
 pygame.quit()
