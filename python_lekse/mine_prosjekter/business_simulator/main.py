@@ -12,13 +12,16 @@ number_sprites = []
 
 clock = pygame.time.Clock()
 last_update = pygame.time.get_ticks()
+last_placeholder_width_update = pygame.time.get_ticks()
 
 for i in range(10):
     number_sprites_path = f"assets/pixel_art/numbers/num_{i}.png"
     num_sprite_img = pygame.image.load(number_sprites_path).convert_alpha()
     number_sprites.append(num_sprite_img)
     del i
-
+num_placeholder_img = pygame.image.load("assets/pixel_art/frames/num_placeholder.png")
+current_width = num_placeholder_img.get_width()
+first_frame = True
 running = True
 while running:
     for event in pygame.event.get():
@@ -30,9 +33,10 @@ while running:
 
     penger = db["stats"]["money"]
     list_penger_int = [int(x) for x in str(penger)]
-    print(list_penger_int)
+    (max_X, max_Y) = pygame.display.get_window_size()
+    print(max_X, max_Y)
     font_spacing = 2
-    start_x = 20
+    start_x = (max_X - num_placeholder_img.get_width()) // 1.02
     start_y = 20
     current_x = start_x
 
@@ -45,17 +49,31 @@ while running:
         num_widths.append(bbox.width)
         num_heights.append(bbox.height)
 
-
     numbers_width_sum = sum(num_widths) + (font_spacing * (len(list_penger_int)))
     numbers_height_sum = max(num_heights) if num_heights else 0
+    target_width = numbers_width_sum * 4
 
     if numbers_width_sum > 0 and numbers_height_sum > 0:
-        num_placeholder_img = pygame.image.load("assets/pixel_art/frames/num_placeholder.png")
-        num_placeholder_img = pygame.transform.scale(num_placeholder_img, (numbers_width_sum * 1.5, numbers_height_sum * 1.5))
+        if first_frame:
+            num_placeholder_img = pygame.transform.scale(num_placeholder_img, (target_width, num_heights[0] * 4))
+            current_width = num_placeholder_img.get_width()
+            first_frame = False
+        else: 
+            if current_width < target_width:
+                if(pygame.time.get_ticks() - last_placeholder_width_update >= 16):
+                    current_width += 1
+                    num_placeholder_img = pygame.transform.scale(num_placeholder_img, (current_width, num_heights[0] * 4))
+                    last_placeholder_width_update = pygame.time.get_ticks()
+            elif current_width > target_width:
+                if(pygame.time.get_ticks() - last_placeholder_width_update >= 16):
+                    current_width -= 1
+                    num_placeholder_img = pygame.transform.scale(num_placeholder_img, (current_width, num_heights[0] * 4))
+                    last_placeholder_width_update = pygame.time.get_ticks()
         screen.blit(num_placeholder_img, (start_x, start_y))
+        current_x += (current_width - numbers_width_sum) / 2
+        start_y += ((num_heights[0] * 4) - numbers_height_sum) / 2
     for num_index in list_penger_int:
         digit_image = number_sprites[num_index]
-
         screen.blit(digit_image, (current_x, start_y))
 
         current_x += digit_image.get_width() + font_spacing
@@ -66,6 +84,5 @@ while running:
         last_update = pygame.time.get_ticks()
 
     clock.tick(60)
-
 
 pygame.quit()
