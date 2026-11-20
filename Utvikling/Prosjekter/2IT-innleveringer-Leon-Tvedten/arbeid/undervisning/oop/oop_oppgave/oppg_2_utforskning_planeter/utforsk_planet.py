@@ -39,10 +39,10 @@ class Undersøkerromfartøy(Romfartøy):
         print(f"{self.navn} er et romfartøy ment for å undersøke planeter fra verdensrommet. {self.navn} har en hastighet på {self.hastighet}, og en drivstoffmengde på {self.drivstoffmengde}. {self.navn} har en undersøker kamera : {self.undersøker_kamera}\n")
 
 
-rask_fartøy = Transportromfartøy("Transport Romfartøy", 300, 350, 500)
-distanse_fartøy = Utforskerromfartøy("Utforsker Romfartøy", 130, 330, "16k ultra close up zoom camera 200 mm - 700 mm")
-stort_fartøy = Undersøkerromfartøy("Undersøker Romfartøy", 260, 400, "32k ultra zoom 200 mm - 20000 mm")
+transport_fartøy = Transportromfartøy("Transport Romfartøy", 300, 350, 500)
+utforsker_fartøy = Utforskerromfartøy("Utforsker Romfartøy", 130, 330, "16k ultra close up zoom camera 200 mm - 700 mm")
+undersøker_fartøy = Undersøkerromfartøy("Undersøker Romfartøy", 260, 400, "32k ultra zoom 200 mm - 20000 mm")
 
-rask_fartøy.presenter()
-distanse_fartøy.presenter()
-stort_fartøy.presenter()
+transport_fartøy.presenter()
+utforsker_fartøy.presenter()
+undersøker_fartøy.presenter()
