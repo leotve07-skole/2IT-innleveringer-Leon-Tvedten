@@ -25,7 +25,7 @@ class Robot(Romstasjonenhet):
     def utfor_oppdrag(self):
         return (
                 f"{style["g"]}----------------------------------------------------------------------------\n"
-                f"{style["g"]}{self.navn} ufører oppdrag: reparere romstasjon\n"
+                f"{style["g"]}{self.navn} utfører oppdrag: reparere romstasjon\n"
                 f"{style["g"]}----------------------------------------------------------------------------"
                 )
 

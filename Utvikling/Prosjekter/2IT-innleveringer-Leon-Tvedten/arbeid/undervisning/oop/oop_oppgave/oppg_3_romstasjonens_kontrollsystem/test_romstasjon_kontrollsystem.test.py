@@ -1,1 +1,0 @@
-from oppg_3_romstasjonens_kontrollsystem.romstasjon_kontrollsystem import Romstasjonenhet

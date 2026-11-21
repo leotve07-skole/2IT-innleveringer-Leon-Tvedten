@@ -6,7 +6,7 @@ class Romfartøy:
         self.bredde_og_hoyde = bredde_og_hoyde
     
     def presenter(self):
-        print(f"{self.navn} har en hastighet på {self.hasitghet}, og en drivstoffmengde på {self.drivstoffmengde}. {self.navn} har en areal på {self.bredde_og_hoyde}")
+        print(f"{self.navn} har en hastighet på {self.hastighet}, og en drivstoffmengde på {self.drivstoffmengde}. {self.navn} har en areal på {self.bredde_og_hoyde}")
 
     def øk_hastighet(self):
         if(self.drivstoffmengde > 0):
@@ -44,6 +44,10 @@ class Stortfartøy(Romfartøy):
 rask_fartøy = Raskfartøy("Rask Romfartøy", 700, 120, 45, 10)
 distanse_fartøy = Distansefartøy("Distanse Romfartøy", 350, 600, 340, 150)
 stort_fartøy = Stortfartøy("Stort Romfartøy", 190, 800, 2540, 500)
+
+rask_fartøy.øk_hastighet()
+distanse_fartøy.øk_hastighet()
+stort_fartøy.øk_hastighet()
 
 rask_fartøy.presenter()
 distanse_fartøy.presenter()
